@@ -1,14 +1,18 @@
 # Importing the library
 import pygame
 import pandas as pd
+import math
 
 # Initializing Pygame
 pygame.init()
 
 class CandleSticks:
-    def __init__(self, candlesticks) -> None:
+    def __init__(self, candlesticks, points = 100) -> None:
+
+        self.chart_height = 780
+
         # Initializing surface
-        self.surface = pygame.display.set_mode((1200,700))
+        self.surface = pygame.display.set_mode((1500, self.chart_height))
 
         # Initialing Colours
         self.colour_red = (255,0,0)
@@ -16,37 +20,46 @@ class CandleSticks:
         self.colour_light_gray = (211, 211, 211)
 
         self.x_offset = 10
+        self.y_padding = 10
+
+        self.points = points
+
+        self.max_price = candlesticks.max().high
+        self.min_price = candlesticks.min().low
+
+        self.max_points = (self.max_price - self.min_price) * points
 
         self.candlesticks = candlesticks
 
-    def create_candle(self):
+    def create_candle(self, index):
         colour = self.colour_light_gray
 
-        top_body_pos = 30
-        top_wick_pos = 10
+        candlestick = self.candlesticks.iloc[index]
 
-        bottom_body_pos = 60
-        bottom_wick_pos = 90
+        top_wick_pos = self.to_relative_pos(candlestick.high)
+        top_body_pos = self.to_relative_pos(max(candlestick.open, candlestick.close))
 
+        bottom_body_pos = self.to_relative_pos(min(candlestick.open, candlestick.close))
+        bottom_wick_pos = self.to_relative_pos(candlestick.low)
 
         # Drawing Candle
-        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset, top_body_pos), pygame.Vector2(self.x_offset, bottom_body_pos), 1)
-        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 1, top_body_pos), pygame.Vector2(self.x_offset + 1, bottom_body_pos), 1)
+        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset, self.y_padding + top_body_pos), pygame.Vector2(self.x_offset, self.y_padding + bottom_body_pos), 1)
+        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 1, self.y_padding + top_wick_pos), pygame.Vector2(self.x_offset + 1, self.y_padding + bottom_wick_pos), 1)
+        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 2, self.y_padding + top_body_pos), pygame.Vector2(self.x_offset + 2, self.y_padding + bottom_body_pos), 1)
 
-        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 2, top_wick_pos), pygame.Vector2(self.x_offset + 2, bottom_wick_pos), 1)
+        self.x_offset += 5
 
-        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 3, top_body_pos), pygame.Vector2(self.x_offset + 3, bottom_body_pos), 1)
-        pygame.draw.line(self.surface, colour, pygame.Vector2(self.x_offset + 4, top_body_pos), pygame.Vector2(self.x_offset + 4, bottom_body_pos), 1)
-
-        self.x_offset += 8
-
-    def render(self, length=0):
+    def render(self, length=280):
+        index_offset = 0
 
         if length == 0 or self.candlesticks.shape[0] < length:
             length = self.candlesticks.shape[0]
+        elif length < self.candlesticks.shape[0]:
+            index_offset = self.candlesticks.shape[0] - length
+            length = self.candlesticks.shape[0]
 
-        for i in range(length):
-            self.create_candle()
+        for i in range(index_offset, length):
+            self.create_candle(i)
 
         pygame.display.flip()
 
@@ -67,3 +80,11 @@ class CandleSticks:
     
     def close(self):
         self.stop_rendering = True
+
+    def to_relative_pos(self, value):
+        value_percentage = ((self.max_price - value) * self.points) / self.max_points * 100
+
+        return int(math.floor(value_percentage / 100 * (self.chart_height - self.y_padding)))
+
+    def to_points(self, value):
+        return value * self.points
