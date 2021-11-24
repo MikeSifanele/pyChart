@@ -130,3 +130,14 @@ class CandleSticks:
 
         return macd_colour.neutral
 
+import MetaTrader5 as mt5
+
+mt5.initialize()
+
+symbol = 'Step Index'
+
+columns = ['time', 'open','high', 'low', 'close', 'fast', 'slow']
+
+m3_rates = pd.DataFrame(mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M3, 1, 90_000), columns=columns)
+
+chart = CandleSticks(m3_rates.iloc[-300:90_000], is_render=True)
