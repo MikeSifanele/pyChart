@@ -62,6 +62,16 @@ class CandleSticks:
 
         self.x_offset += 5
 
+    def create_rectangle(self, colour, render_length, candle_span=10):
+        candlesticks = self.candlesticks.iloc[-candle_span:]
+
+        left = (render_length - candle_span) * 5
+        top = self.to_relative_pos(candlesticks.max().high)
+        width = candle_span * 5
+        height = self.to_relative_pos(candlesticks.min().low) - top
+
+        pygame.draw.rect(self.surface, colour, pygame.Rect(left+9, top-1, width+1, height+1))
+
     def render(self, length=280):
         index_offset = 1
 
@@ -70,6 +80,8 @@ class CandleSticks:
         elif length < self.candlesticks.shape[0]:
             index_offset = self.candlesticks.shape[0] - length
             length = self.candlesticks.shape[0]
+
+        self.create_rectangle(macd_colour.neutral, render_length=length-index_offset)
 
         for i in range(index_offset, length):
             prev_macd = self.calculate_macd(self.candlesticks.iloc[i-1].fast, self.candlesticks.iloc[i-1].slow)
