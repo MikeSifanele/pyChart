@@ -3,9 +3,6 @@ import pygame
 import pandas as pd
 import math
 
-# Initializing Pygame
-pygame.init()
-
 class ema_period:
     fast = 8
     slow = 17
@@ -19,6 +16,9 @@ class macd_colour:
 
 class CandleSticks:
     def __init__(self, candlesticks, points = 100, is_render = False) -> None:
+        # Initializing Pygame
+        pygame.init()
+
         self.chart_height = 780
 
         # Initializing surface
@@ -152,4 +152,4 @@ columns = ['time', 'open','high', 'low', 'close', 'fast', 'slow']
 
 m3_rates = pd.DataFrame(mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M3, 1, 90_000), columns=columns)
 
-chart = CandleSticks(m3_rates.iloc[-300:90_000], is_render=True)
+chart = CandleSticks(m3_rates.iloc[-300:], is_render=True)
