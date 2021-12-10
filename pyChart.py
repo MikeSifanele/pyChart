@@ -72,6 +72,15 @@ class CandleSticks:
 
         pygame.draw.rect(self.surface, colour, pygame.Rect(left+9, top-1, width+1, height+1))
 
+    def create_circle(self, price, colour, is_strong=False):
+        left = self.x_offset - 3
+        top = self.to_relative_pos(price - (.8 if is_strong else .5))
+
+        pygame.draw.circle(self.surface, colour, pygame.Vector2(left, top), radius=2)
+
+        if is_strong:
+            pygame.draw.circle(self.surface, colour, pygame.Vector2(left, top), radius=5, width=1)
+
     def render(self, length=280):
         index_offset = 1
 
@@ -105,7 +114,7 @@ class CandleSticks:
                     elif event.key == pygame.K_LEFT:
                         print('Closing.')
                         self.close()
-    
+
     def close(self):
         self.stop_rendering = True
 
